@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Sample2: Multiple JSON-LD</title>
+    <script type="application/ld+json">
+{
+  "@type": "ARArtifact",
+  "nearby": {
+    "@type": "Restaurant",
+    "name": "Cascal",
+    "address": "1234 Castro St, Mountain View, CA"
+  },
+  "asset": {
+    "widget": "http://opentable.com/cascal/menu.jpg"
+  }
+}
+
+    </script>
+    <script type="application/ld+json">
+{
+  "@type": "ARArtifact",
+  "nearby": {
+    "@type": "Restaurant",
+    "name": "Cheesecake Factory",
+    "address": "Palo Alto, CA"
+  },
+  "asset": {
+    "widget": "http://opentable.com/cheesecake/menu.jpg"
+  }
+}
+
+    </script>
+  </head>
+
+  <body>
+    <!-- TODO: Use a custom element-based 3D model viewer -->
+  </body>
+</html>

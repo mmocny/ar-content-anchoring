@@ -1,0 +1,31 @@
+<!doctype HTML>
+<html>
+  <head>
+    <script src="https://www.gstatic.com/firebasejs/3.3.0/firebase.js"></script>
+    <script src="https://cdn.firebase.com/libs/geofire/4.1.2/geofire.min.js"></script>
+    <script src="main.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div>
+      <input id="uri" type="text" placeholder="URI"/>
+      <input id="addUri" type="button" value="Add to sitemap" />
+    </div>
+
+    <hr />
+
+    <div>
+      <input id="lat" type=text placeholder="Lat"/>
+      <input id="lon" type=text placeholder="Lon"/>
+      <input id="track" type=button value="Track Geolocation" />
+      <input id="radius" type=text placeholder="Radius (meters)" value="5000"/>
+      <input id="search" type=button value="Search" />
+    </div>
+
+    <hr />
+
+    <div id="ARtifacts">
+    </div>
+  </body>
+</html>
