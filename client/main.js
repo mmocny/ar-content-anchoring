@@ -66,14 +66,12 @@ async function trackGeolocation(onLocationUpdate) {
 
 async function registerEvents() {
   $ = document.querySelector.bind(document);
-  /*
   $('#addUri').addEventListener('click', async function(event) {
     let uri = $('#uri').value;
-    sitemap.push(uri);
+    sitemap.addToSitemap(uri);
     console.log('Added', uri, 'to sitemap');
     $('#uri').value = "";
   });
-  */
 
   $('#track').addEventListener('click', (event) => {
     trackGeolocation((lat, lon) => {

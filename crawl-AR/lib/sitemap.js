@@ -49,10 +49,16 @@ async function forLive() {
 
 /******************************************************************************/
 
+async function addToSitemap(uri) {
+  await datastore.sitemap.push(uri);
+}
+
+/******************************************************************************/
+
 async function main() {
   await datastore.sitemap.remove();
-  await datastore.sitemap.push('http://www.google.com');
-  await datastore.sitemap.push('http://www.youtube.com');
+  await addToSitemap('http://www.google.com');
+  await addToSitemap('http://www.youtube.com');
 }
 
 if (!module.parent) {
@@ -66,5 +72,7 @@ if (!module.parent) {
 module.exports.forLocalTesting = forLocalTesting;
 module.exports.forRemoteTesting = forRemoteTesting;
 module.exports.forLive = forLive;
+
+module.exports.addToSitemap = addToSitemap;
 
 /******************************************************************************/
