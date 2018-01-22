@@ -4,49 +4,6 @@
 
 /******************************************************************************/
 
-const config = {
-  apiKey: "",
-  databaseURL: "https://ar-anchoring-prototype.firebaseio.com"
-};
-
-firebase.initializeApp(config);
-const fb = firebase.database().ref();
-
-const geoIndex = new GeoFire(fb.child('geoindex'));
-const artifacts = fb.child('artifacts');
-const sitemap = fb.child('sitemap');
-
-/******************************************************************************/
-
-async function lookupInIndex(lat, lon, radius_in_meters) {
-  let geoQuery = geoIndex.query({
-    center: [lat, lon],
-    radius: radius_in_meters
-  });
-
-  let keys = [];
-  await new Promise((resolve, reject) => {
-    geoQuery.on("key_entered", function(key, location) {
-      keys.push(key);
-    });
-
-    // Disable GeoQuery after its done loading results:
-    geoQuery.on("ready", function() {
-      geoQuery.cancel();
-      resolve();
-    });
-  });
-
-  let payloads = [];
-  for (let key of keys) {
-    let snapshot = await artifacts.child(key).once('value');
-    let jsonld = snapshot.val();
-    payloads.push(jsonld);
-  }
-
-  return payloads;
-}
-
 async function trackGeolocation(onLocationUpdate) {
   /*
   let geoQuery = geoIndex.query({
@@ -109,12 +66,14 @@ async function trackGeolocation(onLocationUpdate) {
 
 async function registerEvents() {
   $ = document.querySelector.bind(document);
+  /*
   $('#addUri').addEventListener('click', async function(event) {
     let uri = $('#uri').value;
     sitemap.push(uri);
     console.log('Added', uri, 'to sitemap');
     $('#uri').value = "";
   });
+  */
 
   $('#track').addEventListener('click', (event) => {
     trackGeolocation((lat, lon) => {
@@ -124,11 +83,11 @@ async function registerEvents() {
   });
 
   $('#search').addEventListener('click', async function(event) {
-    let lat = parseFloat($('#lat').value);
-    let lon = parseFloat($('#lon').value);
+    let latitude = parseFloat($('#lat').value);
+    let longitude = parseFloat($('#lon').value);
     let radius = parseFloat($('#radius').value);
 
-    let results = await lookupInIndex(lat, lon, radius);
+    let results = await indexer.lookupByGeolocation({ latitude, longitude, radius });
 
     let p = $('#ARtifacts');
 
