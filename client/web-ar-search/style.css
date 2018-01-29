@@ -10,6 +10,23 @@ html {
 
 /******************************************************************************/
 
+body {
+  margin: 0;
+  overflow: hidden;
+  position: fixed;
+  width: 100vh;
+  height: 100vh;
+  -webkit-user-select: none;
+  user-select: none;
+}
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/******************************************************************************/
+
 iframe {
   border: 0;
   width: 100%;

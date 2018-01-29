@@ -1,0 +1,28 @@
+/******************************************************************************/
+
+/* CSS RESET */
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+/******************************************************************************/
+
+body {
+  margin: 0;
+  overflow: hidden;
+  position: fixed;
+  width: 100vh;
+  height: 100vh;
+  -webkit-user-select: none;
+  user-select: none;
+}
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/******************************************************************************/

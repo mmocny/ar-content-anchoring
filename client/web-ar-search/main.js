@@ -32,11 +32,11 @@ async function trackGeolocation(onLocationUpdate) {
 
   navigator.geolocation.getCurrentPosition(geolocationCallback, errorHandler);
 
-  async function geolocationCallback(location) {
+  function geolocationCallback(location) {
     let latitude = location.coords.latitude;
     let longitude = location.coords.longitude;
 
-    console.log("Retrieved user's location: [" + latitude + ", " + longitude + "]");
+    //console.log("Retrieved user's location: [" + latitude + ", " + longitude + "]");
 
     onLocationUpdate(latitude, longitude);
 
@@ -49,7 +49,7 @@ async function trackGeolocation(onLocationUpdate) {
   }
 
   /* Handles any errors from trying to get the user's current location */
-  async function errorHandler(error) {
+  function errorHandler(error) {
     if (error.code == 1) {
       console.log("Error: PERMISSION_DENIED: User denied access to their location");
     } else if (error.code === 2) {
