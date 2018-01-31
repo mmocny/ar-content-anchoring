@@ -1,0 +1,13 @@
+{
+  "name": "maps-ar-browser",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "google-map": "^2.0.3"
+  }
+}
