@@ -70,13 +70,20 @@ async function appendAllNearbyMarkers(latitude, longitude, radius) {
 
   for (let result of results) {
     let marker = document.createElement('google-map-marker');
-    console.log(result);
+
+    marker.map = map;
+    marker.clickEvents = true;
 
     // TODO: this parsing presumes structure of the ARtifact json-ld.  Would be better in indexer API has semantic descriptor for these values attached alongside raw json-ld
     marker.latitude = result.nearby.latitude;
     marker.longitude = result.nearby.longitude;
     // TODO: We have no metadata for the widget yet.
     marker.title = result.asset.widget;
+
+    marker.addEventListener('google-map-marker-click', (e) => {
+      console.log(marker.title);
+      window.location.href = "webar://" + result.asset.widget;
+    });
 
     map.appendChild(marker);
   }
