@@ -11,6 +11,7 @@
   </head>
   <body>
     <div>
+      <h3>Add Url to sitemap, for indexing</h3>
       <input id="uri" type="text" placeholder="URI"/>
       <input id="addUri" type="button" value="Add to sitemap" />
     </div>
@@ -18,16 +19,30 @@
     <hr />
 
     <div>
+      <h3>Select geolocation</h3>
       <input id="lat" type=text placeholder="Lat"/>
       <input id="lon" type=text placeholder="Lon"/>
-      <input id="track" type=button value="Track Geolocation" />
+      <input id="track" type=button value="Track Current Geolocation" />
+    </div>
+
+    <hr />
+
+    <div>
+      <h3>Add New content at your location</h3>
+      <input id="content" type=text placeholder="content URI"/>
+      <input id="add" type=button value="Add" />
+    </div>
+
+    <hr />
+
+    <div>
+      <h3>Search for content at your location</h3>
       <input id="radius" type=text placeholder="Radius (meters)" value="5000"/>
       <input id="search" type=button value="Search" />
     </div>
 
     <hr />
 
-    <div id="ARtifacts">
-    </div>
+    <div id="ARtifacts" />
   </body>
 </html>

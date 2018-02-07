@@ -2,50 +2,20 @@
 
 (function() {
 
+anchorTracker = new indexer.AnchorTracker();
+anchorTracker.start();
+
 /******************************************************************************/
 
 async function trackGeolocation(onLocationUpdate) {
-  /*
-  let geoQuery = geoIndex.query({
-    center: [0, 0],
-    radius: 0
-  });
-
-  geoQuery.on("key_entered", function(key, location) {
-    console.log(key + " entered the query. Hi " + key + "!");
-  });
-
-  geoQuery.on("key_exited", function(key, location) {
-    console.log(key + " migrated out of the query. Bye bye :(");
-  });
-
-  geoQuery.on("key_moved", function(key, location) {
-    console.log(key + " moved to somewere else within the query.");
-  });
-
-  // Update query
-  geoQuery.updateCriteria({
-    center: [30.9022, -166.6680], // lat, lon
-    radius: 3000
-  });
-  */
-
   navigator.geolocation.getCurrentPosition(geolocationCallback, errorHandler);
 
   function geolocationCallback(location) {
     let latitude = location.coords.latitude;
     let longitude = location.coords.longitude;
 
-    //console.log("Retrieved user's location: [" + latitude + ", " + longitude + "]");
-
     onLocationUpdate(latitude, longitude);
 
-    /*
-    geoQuery.updateCriteria({
-      center: [lat, lon], // lat, lon
-      radius: radius
-    });
-    */
   }
 
   /* Handles any errors from trying to get the user's current location */
@@ -66,7 +36,20 @@ async function trackGeolocation(onLocationUpdate) {
 
 async function registerEvents() {
   $ = document.querySelector.bind(document);
-  $('#addUri').addEventListener('click', async function(event) {
+
+  anchorTracker.on('anchor_found', (jsonld) => {
+    let p = $('#ARtifacts');
+    let el = document.createElement('iframe');
+    el.src = jsonld.asset.widget;
+    if (p.firstChild) {
+      p.insertBefore(el, p.firstChild);
+    } else {
+      p.appendChild(el);
+    }
+  });
+
+
+  $('#addUri').addEventListener('click', async (event) => {
     let uri = $('#uri').value;
     sitemap.addToSitemap(uri);
     console.log('Added', uri, 'to sitemap');
@@ -74,32 +57,44 @@ async function registerEvents() {
   });
 
   $('#track').addEventListener('click', (event) => {
-    trackGeolocation((lat, lon) => {
-      $('#lat').value = lat;
-      $('#lon').value = lon;
+    trackGeolocation((latitude, longitude) => {
+      $('#lat').value = latitude;
+      $('#lon').value = longitude;
     });
   });
 
-  $('#search').addEventListener('click', async function(event) {
+  $('#search').addEventListener('click', async (event) => {
     let latitude = parseFloat($('#lat').value);
     let longitude = parseFloat($('#lon').value);
     let radius = parseFloat($('#radius').value);
 
-    let results = await indexer.lookupByGeolocation({ latitude, longitude, radius });
+    anchorTracker.update({ latitude, longitude, radius: 5000 });
 
-    let p = $('#ARtifacts');
-
-    for (let result of results) {
-      let el = document.createElement('iframe');
-      el.src = result.asset.widget;
-      if (p.firstChild) {
-        p.insertBefore(el, p.firstChild);
-      } else {
-        p.appendChild(el);
-      }
-    }
+    //let results = await indexer.lookupByGeolocation({ latitude, longitude, radius });
   });
 
+  $('#add').addEventListener('click', async (event) => {
+    let latitude = parseFloat($('#lat').value);
+    let longitude = parseFloat($('#lon').value);
+    let content = $('#content').value;
+
+    let jsonld = {
+      "@context": "http://schema.org",
+      "@type": "ARArtifact",
+      "nearby": {
+        "@type": "GeoCoordinates",
+        latitude,
+        longitude,
+        "elevation": "0"
+      },
+      "asset": {
+        "widget": content
+      }
+    };
+
+    console.log("adding:", { latitude, longitude, uri: content, jsonld });
+    indexer.addByGeolocation({ latitude, longitude, uri: content, jsonld });
+  });
 }
 
 /******************************************************************************/

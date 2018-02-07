@@ -23,7 +23,7 @@ async function addByGeolocation({ latitude, longitude, uri, filename, jsonld } =
 
   await Promise.all([
     geoIndex.set(key, [latitude, longitude]),
-    artifacts.child(key).set(payload)
+    artifacts.child(key).set(jsonld)
   ]);
 }
 
@@ -66,34 +66,33 @@ async function lookupByGeolocation({ latitude, longitude, radius } = {}) {
 // - 'anchor_moved'
 class AnchorTracker extends EventEmitter {
 
-  start({ latitude, longitude, radius }) {
+  start({ latitude, longitude, radius } = { latitude: 0, longitude: 0, radius: 0 }) {
     this.geoQuery = geoIndex.query({
-      center: [0, 0],
-      radius: 0
+      center: [latitude, longitude],
+      radius: radius
     });
-    this.update({ latitude, longitude, radius });
 
     this.geoQuery.on("key_entered", async (key, location) => {
       let snapshot = await artifacts.child(key).once('value');
       let jsonld = snapshot.val();
+      console.log('key_entered', key, location)
       this.emit('anchor_found', jsonld);
     });
 
-    this.geoQuery.on("key_exited", function(key, location) {
+    this.geoQuery.on("key_exited", async (key, location) => {
       let snapshot = await artifacts.child(key).once('value');
       let jsonld = snapshot.val();
       this.emit('anchor_lost', jsonld);
     });
 
-    this.geoQuery.on("key_moved", function(key, location) {
-      console.log(key + " moved to somewere else within the query.");
+    this.geoQuery.on("key_moved", async (key, location) => {
       let snapshot = await artifacts.child(key).once('value');
       let jsonld = snapshot.val();
       this.emit('anchor_moved', jsonld);
     });
   }
 
-  update(longitude, latitude, radius) {
+  update({ latitude, longitude, radius } = { latitude: 0, longitude: 0, radius: 0 }) {
     this.geoQuery.updateCriteria({
       center: [latitude, longitude],
       radius: radius
