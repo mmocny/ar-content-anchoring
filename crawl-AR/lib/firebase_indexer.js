@@ -1,3 +1,5 @@
+const EventEmitter = require('events');
+
 const datastore = require('./datastore');
 
 /******************************************************************************/
@@ -7,25 +9,30 @@ const artifacts = datastore.artifacts;
 
 /******************************************************************************/
 
-function getKeyFromPayload(uri, payload) {
+function getKeyFromPayload(uri, jsonld) {
   // TODO: Improve this
   // Note: Firebase key cannot contain any of the following characters: . # $ ] [ /
-  return [uri, payload.asset.widget].join("|").replace(/[\.\#\$\]\[\/]/g, "?");
+  return [uri, jsonld.asset.widget].join("|").replace(/[\.\#\$\]\[\/]/g, "?");
 }
 
-async function addToIndex(lat, lon, uri, payload) {
-  let key = getKeyFromPayload(uri, payload);
-  console.log(key);
+/******************************************************************************/
+
+async function addByGeolocation({ latitude, longitude, uri, filename, jsonld } = {}) {
+  // TODO: validate inputs
+  let key = getKeyFromPayload(uri || filename, jsonld);
+
   await Promise.all([
-    geoIndex.set(key, [lat, lon]),
+    geoIndex.set(key, [latitude, longitude]),
     artifacts.child(key).set(payload)
   ]);
 }
 
-async function lookupInIndex(lat, lon, radius_in_meters) {
+/******************************************************************************/
+
+async function lookupByGeolocation({ latitude, longitude, radius } = {}) {
   let geoQuery = geoIndex.query({
-    center: [lat, lon],
-    radius: radius_in_meters
+    center: [latitude, longitude],
+    radius: radius // meters
   });
 
   let keys = [];
@@ -53,31 +60,81 @@ async function lookupInIndex(lat, lon, radius_in_meters) {
 
 /******************************************************************************/
 
-async function addByAddress(params) {
-  //console.log("addByAddress:", JSON.stringify(params, null, 4));
-  // TODO: find a way to map addresses to geolocations
-}
+// This will emit events:
+// - 'anchor_found'
+// - 'anchor_lost'
+// - 'anchor_moved'
+class AnchorTracker extends EventEmitter {
+
+  start({ latitude, longitude, radius }) {
+    this.geoQuery = geoIndex.query({
+      center: [0, 0],
+      radius: 0
+    });
+    this.update({ latitude, longitude, radius });
+
+    this.geoQuery.on("key_entered", async (key, location) => {
+      let snapshot = await artifacts.child(key).once('value');
+      let jsonld = snapshot.val();
+      this.emit('anchor_found', jsonld);
+    });
+
+    this.geoQuery.on("key_exited", function(key, location) {
+      let snapshot = await artifacts.child(key).once('value');
+      let jsonld = snapshot.val();
+      this.emit('anchor_lost', jsonld);
+    });
+
+    this.geoQuery.on("key_moved", function(key, location) {
+      console.log(key + " moved to somewere else within the query.");
+      let snapshot = await artifacts.child(key).once('value');
+      let jsonld = snapshot.val();
+      this.emit('anchor_moved', jsonld);
+    });
+  }
+
+  update(longitude, latitude, radius) {
+    this.geoQuery.updateCriteria({
+      center: [latitude, longitude],
+      radius: radius
+    });
+  }
+
+  stop() {
+    this.geoQuery.cancel();
+  }
+};
 
 /******************************************************************************/
 
-async function addByGeolocation(params) {
-  //console.log("addByGeolocation:", JSON.stringify(params, null, 4));
+async function createanchorTracker() {
+  let geoQuery = geoIndex.query({
+    center: [0, 0],
+    radius: 0
+  });
 
-  await addToIndex(params.latitude, params.longitude, params.uri || params.filename, params.jsonld);
-}
 
-/******************************************************************************/
+  let keys = [];
+  await new Promise((resolve, reject) => {
+    geoQuery.on("key_entered", function(key, location) {
+      keys.push(key);
+    });
 
-async function lookupByAddress(params) {
-  //console.log("lookupByAddress:", JSON.stringify(params, null, 4));
-}
+    // Disable GeoQuery after its done loading results:
+    geoQuery.on("ready", function() {
+      geoQuery.cancel();
+      resolve();
+    });
+  });
 
-/******************************************************************************/
+  let payloads = [];
+  for (let key of keys) {
+    let snapshot = await artifacts.child(key).once('value');
+    let jsonld = snapshot.val();
+    payloads.push(jsonld);
+  }
 
-async function lookupByGeolocation(params) {
-  //console.log("lookupByGeolocation:", JSON.stringify(params, null, 4));
-
-  return await lookupInIndex(params.latitude, params.longitude, params.radius);
+  return payloads;
 }
 
 /******************************************************************************/
@@ -91,10 +148,10 @@ if (!module.parent) {
 
 /******************************************************************************/
 
-module.exports.addByAddress = addByAddress;
 module.exports.addByGeolocation = addByGeolocation;
-module.exports.lookupByAddress = lookupByAddress;
 module.exports.lookupByGeolocation = lookupByGeolocation;
+
+module.exports.AnchorTracker = AnchorTracker;
 
 /******************************************************************************/
 
