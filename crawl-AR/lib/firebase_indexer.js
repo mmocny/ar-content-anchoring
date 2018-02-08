@@ -29,6 +29,12 @@ async function addByGeolocation({ latitude, longitude, uri, filename, jsonld } =
 
 /******************************************************************************/
 
+async function addByAddress({ latitude, longitude, uri, filename, jsonld } = {}) {
+  throw new Error("Not Implemented");
+}
+
+/******************************************************************************/
+
 async function lookupByGeolocation({ latitude, longitude, radius } = {}) {
   let geoQuery = geoIndex.query({
     center: [latitude, longitude],
@@ -60,6 +66,11 @@ async function lookupByGeolocation({ latitude, longitude, radius } = {}) {
 
 /******************************************************************************/
 
+async function lookupByAddress({ latitude, longitude, radius } = {}) {
+  throw new Error("Not Implemented");
+}
+
+/******************************************************************************/
 // This will emit events:
 // - 'anchor_found'
 // - 'anchor_lost'
@@ -106,38 +117,6 @@ class AnchorTracker extends EventEmitter {
 
 /******************************************************************************/
 
-async function createanchorTracker() {
-  let geoQuery = geoIndex.query({
-    center: [0, 0],
-    radius: 0
-  });
-
-
-  let keys = [];
-  await new Promise((resolve, reject) => {
-    geoQuery.on("key_entered", function(key, location) {
-      keys.push(key);
-    });
-
-    // Disable GeoQuery after its done loading results:
-    geoQuery.on("ready", function() {
-      geoQuery.cancel();
-      resolve();
-    });
-  });
-
-  let payloads = [];
-  for (let key of keys) {
-    let snapshot = await artifacts.child(key).once('value');
-    let jsonld = snapshot.val();
-    payloads.push(jsonld);
-  }
-
-  return payloads;
-}
-
-/******************************************************************************/
-
 async function main() {
 }
 
@@ -148,7 +127,9 @@ if (!module.parent) {
 /******************************************************************************/
 
 module.exports.addByGeolocation = addByGeolocation;
+module.exports.addByAddress = addByAddress;
 module.exports.lookupByGeolocation = lookupByGeolocation;
+module.exports.lookupByAddress = lookupByAddress;
 
 module.exports.AnchorTracker = AnchorTracker;
 

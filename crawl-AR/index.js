@@ -20,10 +20,18 @@ async function main() {
   let ARtifacts = await parser.parse(jsonld_blocks);
 
   for (let ARtifact of ARtifacts.byAddress) {
-    await indexer.addByAddress(ARtifact);
+    try {
+      await indexer.addByAddress(ARtifact);
+    } catch (ex) {
+      //console.error(ex.stack || ex);
+    }
   }
   for (let ARtifact of ARtifacts.byGeolocation) {
-    await indexer.addByGeolocation(ARtifact);
+    try {
+      await indexer.addByGeolocation(ARtifact);
+    } catch (ex) {
+      console.error(ex.stack || ex);
+    }
   }
 
   let result = await indexer.lookupByGeolocation({
