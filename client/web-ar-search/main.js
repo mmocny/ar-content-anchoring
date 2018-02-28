@@ -7,29 +7,20 @@ anchorTracker.start();
 
 /******************************************************************************/
 
-async function trackGeolocation(onLocationUpdate) {
-  navigator.geolocation.getCurrentPosition(geolocationCallback, errorHandler);
-
-  function geolocationCallback(location) {
-    let latitude = location.coords.latitude;
-    let longitude = location.coords.longitude;
-
-    onLocationUpdate(latitude, longitude);
-
-  }
-
-  /* Handles any errors from trying to get the user's current location */
-  function errorHandler(error) {
-    if (error.code == 1) {
-      console.log("Error: PERMISSION_DENIED: User denied access to their location");
-    } else if (error.code === 2) {
-      console.log("Error: POSITION_UNAVAILABLE: Network is down or positioning satellites cannot be reached");
-    } else if (error.code === 3) {
-      console.log("Error: TIMEOUT: Calculating the user's location too took long");
-    } else {
-      console.log("Unexpected error code")
-    }
-  };
+function getCurrentPosition(options) {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, (error) => {
+      if (error.code == 1) {
+        reject("Error: PERMISSION_DENIED: User denied access to their location");
+      } else if (error.code === 2) {
+        reject("Error: POSITION_UNAVAILABLE: Network is down or positioning satellites cannot be reached");
+      } else if (error.code === 3) {
+        reject("Error: TIMEOUT: Calculating the user's location too took long");
+      } else {
+        reject("Unexpected error code")
+      }
+    }, options);
+  });
 }
 
 /******************************************************************************/
@@ -57,7 +48,9 @@ async function registerEvents() {
   });
 
   $('#track').addEventListener('click', (event) => {
-    trackGeolocation((latitude, longitude) => {
+    getCurrentPosition((result) => {
+      let { latitude, longitude } = result.coords;
+
       $('#lat').value = latitude;
       $('#lon').value = longitude;
     });
