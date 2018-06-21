@@ -7,7 +7,7 @@
     "test": "mocha -w"
   },
   "dependencies": {
-    "crawler": "^1.1.2",
+    "crawler": "^1.1.4",
     "firebase": "^4.8.2",
     "geo-nearby": "^2.0.1",
     "geofire": "^4.1.2"
