@@ -15,13 +15,7 @@ async function forLocalTesting() {
   let filenames = await util.promisify(fs.readdir)(root);
 
   for (let filename of filenames) {
-    filename = path.join(root,filename);
-    let content = await util.promisify(fs.readFile)(filename, 'utf-8');
-    let crawlArgs = {
-      html: content, // crawl supports inline HTML
-      filename // also attach the filename for easier debugging
-    };
-    ret.push(crawlArgs);
+    ret.push('file://' + path.join(root,filename));
   }
 
   return ret;

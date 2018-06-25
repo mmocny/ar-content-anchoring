@@ -1,15 +1,25 @@
-const util = require("./util");
+const fs = require('fs');
+const util = require('util');
+const URL = require('url').URL;
+
+const promisifyEmitter = require("./promisifyEmitter");
 const Crawler = require("crawler");
+
+/******************************************************************************/
+
+async function fetch_from_disk(filename) {
+  let content = await util.promisify(fs.readFile)(filename, 'utf-8');
+  return content;
+}
 
 /******************************************************************************/
 
 /*
  * Crawl the selected URI, then return all the JSON-LD markup contained.
  *
- * `params` is an array of URI strings, or objects with one of
- * `{ uri: "..." }` or `{ html: "..." }`.
  */
-async function crawl(params) {
+async function crawl(urls) {
+  urls = urls.map((url) => new URL(url));
   let ret = [];
 
   // TODO: as-is, this creates a new crawler for each new call to crawl().
@@ -24,7 +34,7 @@ async function crawl(params) {
 
     // preRequest is not called for raw HTML
     preRequest(options, done) {
-      //console.log(">> About to Crawl url: [", options.uri, "] with", Object.keys(options.headers).length, "headers");
+      console.log(">> About to Crawl url: [", options.uri, "] with", Object.keys(options.headers).length, "headers");
       done();
     },
 
@@ -67,12 +77,20 @@ async function crawl(params) {
     }
   });
 
-  for (param of params) {
+  for (url of urls) {
+    let param = url;
+
+    if (url.protocol == 'file:') {
+      param = {
+        html: await fetch_from_disk(url.pathname),
+        filename: url,
+      };
+    }
     c.queue(param);
   }
 
   // Stall the crawl function return until after the crawl drains the queue
-  await util.promisifyEmitter(c, 'drain');
+  await promisifyEmitter(c, 'drain');
 
   return ret;
 }
@@ -80,9 +98,7 @@ async function crawl(params) {
 /******************************************************************************/
 
 async function main() {
-  await crawl([{
-      uri: 'http://www.google.com/',
-    }]);
+  await crawl(['http://www.google.com/']);
 }
 
 if (!module.parent) {

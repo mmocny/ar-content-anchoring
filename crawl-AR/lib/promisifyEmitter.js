@@ -32,6 +32,6 @@ if (!module.parent) {
 
 /******************************************************************************/
 
-module.exports.promisifyEmitter = promisifyEmitter;
+module.exports = promisifyEmitter;
 
 /******************************************************************************/
