@@ -11,7 +11,6 @@ async function main() {
   let crawler = require('./lib/crawler');
   let parser = require('./lib/parser');
 
-  //let indexer = require('./lib/indexer');
   let indexer = require('./lib/firebase_indexer');
 
   let sites = [].concat(await sitemap.forLocalTesting(), await sitemap.forRemoteTesting());
