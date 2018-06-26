@@ -1,79 +1,89 @@
+const EventEmitter = require('events');
+
 /******************************************************************************/
 
-/*
- * parse is given an array of objects in the form:
- *  {
- *    uri: "...",
- *    filename: "...",
- *    attribs: "...",
- *    jsonld: "...",
- *  }
- *
- *  We first verify that the jsonld is indeed in the form of an AR anchor (i.e.
- *  @type is "ARArtifact".
- *  We then extract the relevant metadata to be indexed for later.
- */
-async function parse(objects) {
-  let ret = {
-    byAddress: [],
-    byGeolocation: []
-  };
+class Parser extends EventEmitter {
+  parse(jsonld) {
+    let type = jsonld['@type'].toLowerCase().trim();
 
-  for (let o of objects) {
-    let { uri, filename, attribs, jsonld } = o;
-
-    if (typeof jsonld !== "object") continue;
-
-    let { type, nearby, asset } = jsonld;
-    type = jsonld["@type"];
-
-    if (typeof type !== "string" || type.toLowerCase().localeCompare("arartifact") != 0)
-      continue;
-
-    if (typeof nearby === "object") {
-      // http://schema.org/GeoCoordinates
-      let { address, addressCountry, elevation, latitude, longitude, postalCode } = nearby;
-
-      latitude = parseFloat(latitude);
-      longitude = parseFloat(longitude);
-
-      if (latitude && longitude) {
-        // Optional elevation
-        // types are Number or Text
-        ret.byGeolocation.push({
-          uri,
-          filename,
-          latitude,
-          longitude,
-          elevation,
-          jsonld
+    switch (type) {
+      case "datafeed":
+        return this._parseDataFeed({
+          root: jsonld,
+          feed: jsonld,
         });
-      }
 
-      if (address) {
-        // Optional addressCountry, postalCode
-        // types are Text or http://schema.org/PostalAddress
-        ret.byAddress.push({
-          uri,
-          filename,
-          address,
-          addressCountry,
-          postalCode,
-          jsonld
+      case "arartifact":
+        return this._parseArArtifact({
+          root: jsonld,
+          artifact: jsonld,
         });
-      }
+
+      default:
+        throw new Exception("Json-ld does not contain DataFeed or ARArtifact");
     }
-
-    // TODO: extra other relevant metadata
   }
 
-  return ret;
+  _parseDataFeed(params) {
+    let { root, feed } = params;
+
+    this.emit('data-feed', Object.assign({}, params));
+
+    // TODO: iterate over datafeed items, call _parseArArtifact
+
+  }
+
+  _parseArArtifact(params) {
+    let { root, feed, artifact } = params;
+
+    this.emit('ar-artifact', params);
+  }
+
+  _parseLandmark(params) {
+    let { root, feed, artifact, landmark } = params;
+
+    // http://schema.org/GeoCoordinates
+    let { address, addressCountry, elevation, latitude, longitude, postalCode } = nearby;
+
+    latitude = parseFloat(latitude);
+    longitude = parseFloat(longitude);
+
+    if (latitude && longitude) {
+      // Optional elevation
+      // types are Number or Text
+      ret.byGeolocation.push({
+        uri,
+        filename,
+        latitude,
+        longitude,
+        elevation,
+        jsonld
+      });
+    }
+
+    if (address) {
+      // Optional addressCountry, postalCode
+      // types are Text or http://schema.org/PostalAddress
+      ret.byAddress.push({
+        uri,
+        filename,
+        address,
+        addressCountry,
+        postalCode,
+        jsonld
+      });
+    }
+  }
+
+  _parseAsset(rootld, nodeld) {
+  }
 }
 
 /******************************************************************************/
 
 async function main() {
-  await parse();
+  parser = new Parser();
+  parser.parse({});
 }
 
 if (!module.parent) {
@@ -82,7 +92,7 @@ if (!module.parent) {
 
 /******************************************************************************/
 
-module.exports.parse = parse;
+module.exports = exports = Parser;
 
 /******************************************************************************/
 

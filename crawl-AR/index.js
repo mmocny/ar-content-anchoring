@@ -11,26 +11,41 @@ async function main() {
   let sites = [].concat(await sitemap.forLocalTesting()/*, await sitemap.forRemoteTesting()*/);
 
   let crawler = require('./lib/crawler');
-  let jsonld_blocks = await crawler.crawl(sites);
+  let crawl_results = await crawler.crawl(sites);
 
-  let parser = require('./lib/parser');
-  let ARtifacts = await parser.parse(jsonld_blocks);
-
+  const Parser = require('./lib/parser');
+  let parser = new Parser();
   let indexer = require('./lib/firebase_indexer');
-  for (let ARtifact of ARtifacts.byAddress) {
+
+  parser.on('data-feed', async() => {
+    console.log('GOT DATAFEED EVENT');
+  });
+  parser.on('ar-artifact', async() => {
+    console.log('GOT ARARTIFACT EVENT');
+  });
+  parser.on('anchor-address', async(root_ld, node_ld) => {
+    console.log('GOT ANCHOR-ADDRESS EVENT');
+    return;
     try {
       await indexer.addByAddress(ARtifact);
     } catch (ex) {
       //console.error(ex.stack || ex);
     }
-  }
-  for (let ARtifact of ARtifacts.byGeolocation) {
+  });
+  parser.on('anchor-geolocation', async() => {
+    console.log('GOT ANCHOR-GEOLOCATION EVENT');
+    return;
     try {
       await indexer.addByGeolocation(ARtifact);
     } catch (ex) {
       console.error(ex.stack || ex);
     }
+  });
+
+  for (crawl_result of crawl_results) {
+    await parser.parse(crawl_result.jsonld);
   }
+
 
   let result = await indexer.lookupByGeolocation({
     longitude: 74,
@@ -47,7 +62,7 @@ if (!module.parent) {
     try {
       const Firebase = require('firebase');
       Firebase.database().goOffline();
-    } catch (ex) { /* We may not have actually started FB, catching the error */ }
+    } catch (ex) { } // We may not have actually started FireBase, catching the error
   });
 }
 

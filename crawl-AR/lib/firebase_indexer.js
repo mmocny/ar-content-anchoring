@@ -86,7 +86,7 @@ class AnchorTracker extends EventEmitter {
     this.geoQuery.on("key_entered", async (key, location) => {
       let snapshot = await artifacts.child(key).once('value');
       let jsonld = snapshot.val();
-      console.log('key_entered', key, location)
+      //console.log('key_entered', key, location)
       this.emit('anchor_found', jsonld);
     });
 
