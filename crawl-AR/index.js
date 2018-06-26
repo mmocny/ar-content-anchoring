@@ -11,13 +11,12 @@ async function main() {
   let sites = [].concat(await sitemap.forLocalTesting()/*, await sitemap.forRemoteTesting()*/);
 
   let crawler = require('./lib/crawler');
-  let parser = require('./lib/parser');
-  let indexer = require('./lib/firebase_indexer');
-
   let jsonld_blocks = await crawler.crawl(sites);
 
+  let parser = require('./lib/parser');
   let ARtifacts = await parser.parse(jsonld_blocks);
 
+  let indexer = require('./lib/firebase_indexer');
   for (let ARtifact of ARtifacts.byAddress) {
     try {
       await indexer.addByAddress(ARtifact);

@@ -14,8 +14,6 @@
  *  We then extract the relevant metadata to be indexed for later.
  */
 async function parse(objects) {
-  //console.log("parse:", JSON.stringify(params, null, 4));
-
   let ret = {
     byAddress: [],
     byGeolocation: []

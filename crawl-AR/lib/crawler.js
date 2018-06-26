@@ -17,6 +17,7 @@ async function fetch_from_disk(filename) {
 /*
  * Crawl the selected URI, then return all the JSON-LD markup contained.
  *
+ * TODO: Should probably return the raw HTML here, and have something else extract JSON-LD markup -- but we do it here because we have easy access to DOM from Crawler library.
  */
 async function crawl(urls) {
   urls = urls.map((url) => new URL(url));
@@ -34,7 +35,7 @@ async function crawl(urls) {
 
     // preRequest is not called for raw HTML
     preRequest(options, done) {
-      console.log(">> About to Crawl url: [", options.uri, "] with", Object.keys(options.headers).length, "headers");
+      //console.log(">> About to Crawl url: [", options.uri, "] with", Object.keys(options.headers).length, "headers");
       done();
     },
 
@@ -42,9 +43,9 @@ async function crawl(urls) {
       let options = res.options;
 
       if (!options.uri && options.html) {
-        console.log(">> Crawled file: [", options.filename ,"]");
+        //console.log(">> Crawled file: [", options.filename ,"]");
       } else {
-        console.log(">> Crawled uri: [", options.uri ,"], with status code:", options.statusCode);
+        //console.log(">> Crawled uri: [", options.uri ,"], with status code:", options.statusCode);
       }
 
       if (error){
@@ -53,7 +54,7 @@ async function crawl(urls) {
       }
 
       let $ = res.$;
-      console.log('Grabbed', res.body.length, 'bytes');
+      //console.log('Grabbed', res.body.length, 'bytes');
 
       // TODO replace this with a query for all JSON-LD
       // Attach the URI/filename to it as well
