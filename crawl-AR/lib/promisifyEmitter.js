@@ -1,6 +1,7 @@
 /******************************************************************************/
 
 // Helper function to convert an eventemitter event into a Promise
+// Will wait for some event to fire, then resolve promise.
 //
 // e.g. Turn this:
 //    foo.on('bar', () => { ... })
