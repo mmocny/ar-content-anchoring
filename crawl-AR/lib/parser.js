@@ -1,10 +1,21 @@
 const EventEmitter = require('events');
 
 /******************************************************************************/
+class ParserError extends Error {};
 
 class Parser extends EventEmitter {
   parse(jsonld) {
-    let type = jsonld['@type'].toLowerCase().trim();
+    if (!('@type' in jsonld)) {
+      throw new ParserError("Json-ld does not contain @type");
+    }
+
+    let type = jsonld['@type']
+
+    if (typeof type !== 'string') {
+      throw new ParserError("Json-ld @type is not string");
+    }
+
+    type = type.toLowerCase().trim();
 
     switch (type) {
       case "datafeed":
@@ -20,7 +31,7 @@ class Parser extends EventEmitter {
         });
 
       default:
-        throw new Exception("Json-ld does not contain DataFeed or ARArtifact");
+        throw new Error("Json-ld does not contain DataFeed or ARArtifact");
     }
   }
 
@@ -93,6 +104,7 @@ if (!module.parent) {
 /******************************************************************************/
 
 module.exports = exports = Parser;
+module.exports.ParserError = ParserError;
 
 /******************************************************************************/
 

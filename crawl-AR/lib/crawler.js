@@ -1,9 +1,10 @@
+const URL = require('url').URL;
+const fetch = require('node-fetch');
 const fs = require('fs');
 const util = require('util');
-const URL = require('url').URL;
 
-const promisifyEmitter = require("./promisifyEmitter");
 const Crawler = require("crawler");
+const promisifyEmitter = require("./promisifyEmitter");
 
 /******************************************************************************/
 
@@ -20,7 +21,6 @@ async function fetch_from_disk(filename) {
  * TODO: Should probably return the raw HTML here, and have something else extract JSON-LD markup -- but we do it here because we have easy access to DOM from Crawler library.
  */
 async function crawl(urls) {
-  urls = urls.map((url) => new URL(url));
   let ret = [];
 
   // TODO: as-is, this creates a new crawler for each new call to crawl().
@@ -40,54 +40,75 @@ async function crawl(urls) {
     },
 
     callback(error, res, done) {
-      let options = res.options;
+      (async() => { // Async IIFE
+        let options = res.options;
 
-      if (!options.uri && options.html) {
-        //console.log(">> Crawled file: [", options.filename ,"]");
-      } else {
-        //console.log(">> Crawled uri: [", options.uri ,"], with status code:", options.statusCode);
-      }
-
-      if (error){
-        console.error(error);
-        return done();
-      }
-
-      let $ = res.$;
-      //console.log('Grabbed', res.body.length, 'bytes');
-
-      // TODO replace this with a query for all JSON-LD
-      // Attach the URI/filename to it as well
-      let jsonld_tags = $("script[type='application/ld+json']").toArray();
-      for (let tag of jsonld_tags) {
-        try {
-          let jsonld = JSON.parse(tag.children[0].data);
-
-          ret.push({
-            uri: options.uri,
-            filename: options.filename,
-            attribs: tag.attribs,
-            jsonld
-          });
-        } catch(ex) {
-          console.error(ex);
+        if (!options.uri && options.html) {
+          //console.log(">> Crawled file: [", options.filename ,"]");
+        } else {
+          //console.log(">> Crawled uri: [", options.uri ,"], with status code:", options.statusCode);
         }
-      }
 
-      done();
+        if (error){
+          console.error(error);
+          return done();
+        }
+
+        let $ = res.$;
+
+        let jsonld_tags = $("script[type='application/ld+json']").toArray();
+        for (let tag of jsonld_tags) {
+          try {
+            let jsonld = JSON.parse(tag.children[0].data);
+
+            ret.push({
+              uri: options.uri,
+              filename: options.filename,
+              attribs: tag.attribs,
+              jsonld
+            });
+          } catch(ex) {
+            console.error(ex);
+          }
+        }
+
+        let jsonld_links = $("link[rel='alternate'][type='application/ld+json'][href]").toArray();
+        for (let link of jsonld_links) {
+          console.log("FOUND:", link);
+
+          let url = new URL(link.href);
+          if (url.protocol == 'file:') {
+            let jsonld = JSON.parse(await fetch_from_disk(url.pathname));
+            ret.push({
+              filename: url,
+              jsonld
+            });
+          } else {
+            let jsonld = JSON.parse(await fetch(url));
+            ret.push({
+              uri: url,
+              jsonld
+            });
+          }
+
+        }
+
+        done();
+      })();
     }
   });
 
-  for (url of urls) {
-    let param = url;
-
+  for (url of urls.map((url) => new URL(url))) {
     if (url.protocol == 'file:') {
-      param = {
+      c.queue({
         html: await fetch_from_disk(url.pathname),
         filename: url,
-      };
+      });
+    } else {
+      c.queue({
+        uri: url
+      });
     }
-    c.queue(param);
   }
 
   // Stall the crawl function return until after the crawl drains the queue
