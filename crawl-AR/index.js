@@ -23,23 +23,31 @@ async function main() {
   let indexer = require('./lib/firebase_indexer');
 
   /* Listen to parser events, update index as needed */
-  parser.on('data-feed', async() => {
+  parser.on('data-feed', async(params) => {
+    console.log(JSON.stringify(params, null, 4));
   });
-  parser.on('ar-artifact', async() => {
+  parser.on('ar-artifact', async(params) => {
+    console.log(JSON.stringify(params, null, 4));
   });
-  parser.on('anchor-address', async(root_ld, node_ld) => {
+  parser.on('anchor-address', async(params) => {
+    console.log(JSON.stringify(params, null, 4));
+      /*
     try {
       await indexer.addByAddress(ARtifact);
     } catch (ex) {
       console.error(ex.stack || ex);
     }
+      */
   });
-  parser.on('anchor-geolocation', async() => {
+  parser.on('anchor-geolocation', async(params) => {
+    console.log(JSON.stringify(params, null, 4));
+      /*
     try {
       await indexer.addByGeolocation(ARtifact);
     } catch (ex) {
       console.error(ex.stack || ex);
     }
+      */
   });
 
   /* Now ask parser to parse all the crawled jsonld */

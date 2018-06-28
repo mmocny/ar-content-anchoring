@@ -74,9 +74,8 @@ async function crawl(urls) {
 
         let jsonld_links = $("link[rel='alternate'][type='application/ld+json'][href]").toArray();
         for (let link of jsonld_links) {
-          console.log("FOUND:", link);
 
-          let url = new URL(link.href);
+          let url = new URL(link.attribs.href);
           if (url.protocol == 'file:') {
             let jsonld = JSON.parse(await fetch_from_disk(url.pathname));
             ret.push({

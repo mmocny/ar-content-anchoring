@@ -1,1 +1,4 @@
-{}
+{
+  "@type": "DataFeed",
+  "name": "Foo"
+}
