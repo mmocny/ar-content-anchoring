@@ -17,17 +17,14 @@ async function fetch_from_disk(filename) {
 
 /*
  * Crawl the selected URI, then return all the JSON-LD markup contained.
+ * Will find:
+ *  <script type=application/ld+json>
+ *  <link red=alternate type=application/ld+json href=>
  *
- * TODO: Should probably return the raw HTML here, and have something else extract JSON-LD markup -- but we do it here because we have easy access to DOM from Crawler library.
  */
 async function crawl(urls) {
   let ret = [];
 
-  // TODO: as-is, this creates a new crawler for each new call to crawl().
-  // Would be better if we have a single crawler object which queues more
-  // input values each time.  Would have to change crawler to generate events
-  // each time a new page is crawled rather than returning the full set of
-  // results back at the end of computation.
   let c = new Crawler({
     maxConnections : 2,
     //rateLimit: 1000, // ms between crawls?
@@ -56,6 +53,9 @@ async function crawl(urls) {
 
         let $ = res.$;
 
+        // TODO: Consider supporting src=, like <link href=>
+
+        // Parse inline JSON+LD content
         let jsonld_tags = $("script[type='application/ld+json']").toArray();
         for (let tag of jsonld_tags) {
           try {
@@ -72,18 +72,22 @@ async function crawl(urls) {
           }
         }
 
+        // Fetch <link>s to JSON+LD
         let jsonld_links = $("link[rel='alternate'][type='application/ld+json'][href]").toArray();
         for (let link of jsonld_links) {
 
-          let url = new URL(link.attribs.href);
+          let url = new URL(link.attribs.href, options.uri); // Provide the original URL as base
           if (url.protocol == 'file:') {
-            let jsonld = JSON.parse(await fetch_from_disk(url.pathname));
+            let content = await fetch_from_disk(url.pathname)
+            let jsonld = JSON.parse(content);
             ret.push({
               filename: url,
               jsonld
             });
           } else {
-            let jsonld = JSON.parse(await fetch(url));
+            let response = await fetch(url);
+            let content = await response.text();
+            let jsonld = JSON.parse(content);
             ret.push({
               uri: url,
               jsonld
