@@ -1,6 +1,10 @@
 {
-  "name": "crawl-ar",
-  "version": "1.0.0",
+  "name": "web-ar-content-anchoring",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mmocny/ar-content-anchoring.git"
+  },
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -12,6 +16,7 @@
     "firebase": "^4.8.2",
     "geo-nearby": "^2.0.1",
     "geofire": "^4.1.2",
+    "minimist": "^1.2.0",
     "node-fetch": "^2.1.2"
   },
   "devDependencies": {
