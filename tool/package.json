@@ -6,6 +6,9 @@
     "url": "https://github.com/mmocny/ar-content-anchoring.git"
   },
   "main": "index.js",
+  "bin": {
+    "webar-ca": "./index.js"
+  },
   "scripts": {
     "start": "node index.js",
     "sample": "node sample.js",

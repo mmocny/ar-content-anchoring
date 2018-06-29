@@ -1,4 +1,4 @@
-/* Hello! */
+#! /usr/bin/env node
 
 /******************************************************************************/
 
@@ -6,12 +6,29 @@ global.__basedir = __dirname;
 
 /******************************************************************************/
 
+function help(argv) {
+  console.log("Help yourself");
+}
+
+/******************************************************************************/
+
+function unknown(argv) {
+  console.log(`Valid commands:
+    help
+    sample
+    extract
+`);
+}
+
+/******************************************************************************/
+
 async function main() {
   const parseArgs = require('minimist');
   const opts = {
     string: [], // argument names to always treat as strings
-    boolean: [], // argument names to always treat as booleans.  Double hyphen: --Arg means true
+    boolean: [ "help" ], // argument names to always treat as booleans.  Double hyphen: --Arg means true
     alias: {
+      "help": "-h",
     }, // maps argument to list of aliases
     default: {
     }, // maps argument names to default values
@@ -27,14 +44,26 @@ async function main() {
 
   let argv = parseArgs(process.argv.slice(2), opts);
 
-  let command = (argv._ || ["sample"]) [0]
+  if (argv.h) {
+    return help();
+  }
+
+  let command = argv._[0];
   switch (command) {
+    case "extract":
+      await require("./extract").extract(argv._.slice(1));
+      break;
+
+    case "help":
+      help(argv);
+      break;
+
     case "sample":
       await require('./sample').sample();
       break;
 
     default:
-      console.warn("Unknown command:", command);
+      unknown(argv);
       break;
   }
 }
