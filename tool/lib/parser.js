@@ -68,6 +68,8 @@ class Parser extends EventEmitter {
     let { root, datafeed, arartifact } = params;
 
     this.emit('ar-artifact', params);
+
+    // TODO: parse out landmarks
   }
 
   _parseLandmark(params) {

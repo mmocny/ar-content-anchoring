@@ -55,6 +55,8 @@ async function crawl(urls) {
 
         let $ = res.$;
 
+        // TODO: Add support for fetching .jsonld files directly (then remove the use of node-fetch below)
+
         // TODO: Consider supporting src=, like <link href=>
 
         // Parse inline JSON+LD content

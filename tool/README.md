@@ -1,10 +1,20 @@
 ## Install
 
-`npm install`
+`npm install` to fetch dependancies, then `npm start`.
 
-## Run `crawl-ar`
+`npm link` to install `webar-ca` CLI tool locally.
 
-If you start `crawl-ar`, it will go through the following pipeline of tasks:
+## `extract` Command
+
+If you run `webar-ca extract [URL or PATH]`, it will go through the following:
+
+* Fetch the URL or PATH
+* Extract all JSON+LD, including fetches to `<link rel=alternate>`
+* Print out all discovered DataFeed, ArArtifacts, and Landmarks
+
+## `sample` Command
+
+If you run `webar-ca sample`, it will go through the following pipeline of tasks:
 
 * Fetch a list of URLs to crawl from Firebase, known as the `sitemap`.
   * Append a list of files to crawl from local disk, by default just from `data/sample-sites/` directory   Useful for testing, or offline iteration.
