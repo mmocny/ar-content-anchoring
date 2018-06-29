@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "sample": "node sample.js",
     "test": "mocha -w"
   },
   "dependencies": {
