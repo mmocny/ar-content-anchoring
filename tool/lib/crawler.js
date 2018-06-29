@@ -21,6 +21,8 @@ async function fetch_from_disk(filename) {
  *  <script type=application/ld+json>
  *  <link red=alternate type=application/ld+json href=>
  *
+ * Input URLs must be absolute, and include protocol prefix.
+ * Local files must be in form file:///Path/Name
  */
 async function crawl(urls) {
   let ret = [];

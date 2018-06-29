@@ -1,8 +1,10 @@
+const URL = require('url').URL;
+
 /******************************************************************************/
 
 async function extract(urls) {
   /* What are we going to index? */
-  let sites = [].concat(urls); // if urls is just one url, concat converts to array
+  let sites = [].concat(urls).map((url) => new URL(url, "file://"+process.cwd()+'/'));
 
   /* Lets fetch (or open) the HTML and extract JSON-LD */
   let crawler = require('./lib/crawler');
